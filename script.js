@@ -16,7 +16,7 @@ const PLAYER_SPEED = 5;
 
 // Game state
 let score = 0;
-let souls = 10;
+let souls = 0;
 let gameOver = false;
 let gamePaused = false;
 let currentSpeed = BASE_OBSTACLE_SPEED;
