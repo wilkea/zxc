@@ -1,6 +1,29 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes requiemAnimation {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+.requiem-effect {
+    animation: requiemAnimation 1s ease-out forwards;
+}
+`;
+document.head.appendChild(style);
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
@@ -119,6 +142,7 @@ function preloadImages(callback) {
         }
     }
 
+    
     // Load player image with fallback
     player.image.onload = imageLoaded;
     player.image.onerror = () => {
@@ -964,55 +988,33 @@ function createRequiemExplosion() {
     // Optional: Add a screen shake effect for more impact
     screenShake(20); // Call a screen shake function if you have one
 }
-
-// Funcția activateUltimate
-function activateUltimate() {
+function triggerRequiemAnimation() {
+    requiemGif.classList.add('requiem-effect');
+    
+    // Elimină clasa după animație pentru a o putea reaplica ulterior
+    requiemGif.addEventListener('animationend', () => {
+        requiemGif.classList.remove('requiem-effect');
+    }, { once: true });
+}function activateUltimate() {
     if (souls >= 10 && !player.isUltimate) {
         player.isUltimate = true;
         player.ultimateDuration = player.ultimateMaxDuration;
         souls = 0;
-        const gifSize = 300; // Size of the GIF (width and height)
-        requiemGif.style.left = `${player.x + player.width / 2 - gifSize / 2}px`; // Center horizontally
-        requiemGif.style.top = `${player.y + player.height / 2 - gifSize / 2}px`; // Center vertically
+
+        const gifSize = 300;
+        requiemGif.style.left = `${player.x + player.width / 2 - gifSize / 2}px`;
+        requiemGif.style.top = `${player.y + player.height / 2 - gifSize / 2}px`;
         requiemGif.style.display = 'block';
+        
+        triggerRequiemAnimation(); // Adaugă animația
 
-        try {
-            sounds.requiem.currentTime = 0; // Reset sound to start
-            sounds.requiem.playbackRate = 1.9; // Speed up the sound (1.5x speed)
-
-            sounds.requiem.play();
-        } catch (e) {
-            console.log("Could not play requiem sound");
-        }
-
-
-        // After the cast duration, hide the GIF and create the explosion
         setTimeout(() => {
             obstacles.length = 0;
-            requiemGif.style.display = 'none'; // Hide the GIF
-            createRequiemExplosion(); // Create explosion effects
-            try {
-                sounds.requiem.pause();
-                sounds.requiem.currentTime = 0; // Reset sound to start
-            } catch (e) {
-                console.log("Could not stop requiem sound");
-            }
-        }, ULTIMATE_CAST_DURATION * (1000 / 60)); // Convert frames to milliseconds
-        // Clear all obstacles
-
-
-        // Play the Requiem sound
-        try {
-            sounds.requiem.play();
-        } catch (e) {
-            console.log("Could not play requiem sound");
-        }
-
-        // Show the casting GIF
-
+            requiemGif.style.display = 'none';
+            createRequiemExplosion();
+        }, ULTIMATE_CAST_DURATION * (1000 / 60));
     }
 }
-
 function increaseSpeed() {
     if (gameStarted && !gamePaused && !gameOver) {
         currentSpeed += 0.5;
